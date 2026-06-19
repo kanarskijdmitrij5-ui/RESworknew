@@ -1,0 +1,7 @@
+codewords-client==0.4.6
+fastapi==0.116.1
+httpx==0.28.1
+pydantic>=2.3,<3.0
+uvicorn==0.24.0
+python-multipart==0.0.6
+aiofiles==23.2.1
