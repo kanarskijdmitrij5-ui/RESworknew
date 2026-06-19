@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeTracker — Панель руководителя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --bg-card: #ffffff;
+    --bg-sidebar: #1a1a18;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b66;
+    --text-muted: #a0a09a;
+    --text-sidebar: #c8c8c0;
+    --text-sidebar-active: #ffffff;
+    --border: #e8e7e2;
+    --border-strong: #d0cfc9;
+    --accent-green: #1d9e75;
+    --accent-green-bg: #e1f5ee;
+    --accent-green-text: #0f6e56;
+    --accent-amber: #ba7517;
+    --accent-amber-bg: #faeeda;
+    --accent-amber-text: #854f0b;
+    --accent-red: #e24b4a;
+    --accent-red-bg: #fcebeb;
+    --accent-red-text: #a32d2d;
+    --accent-blue: #378add;
+    --accent-blue-bg: #e6f1fb;
+    --accent-blue-text: #185fa5;
+    --font: 'Golos Text', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --sidebar-w: 220px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-sidebar);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 10;
+  }
+
+  .sidebar-logo {
+    padding: 20px 18px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-green);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .nav {
+    padding: 12px 0;
+    flex: 1;
+  }
+
+  .nav-section {
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 18px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 18px;
+    font-size: 13px;
+    color: var(--text-sidebar);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+
+  .nav-item.active {
+    color: var(--text-sidebar-active);
+    background: rgba(255,255,255,0.08);
+    border-left-color: var(--accent-green);
+  }
+
+  .nav-item svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+  .nav-item.active svg { opacity: 1; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent-green);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-family: var(--mono);
+  }
+
+  .sidebar-footer {
+    padding: 14px 18px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .user-name { font-size: 12px; color: #fff; font-weight: 500; }
+  .user-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+  /* ── Main ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 28px 28px 40px;
+    min-height: 100vh;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; }
+  .page-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    white-space: nowrap;
+  }
+
+  .pill-green {
+    background: var(--accent-green-bg);
+    border-color: #9fe1cb;
+    color: var(--accent-green-text);
+    font-weight: 500;
+  }
+
+  .pill-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── Metrics ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .metric-card.green::before { background: var(--accent-green); }
+  .metric-card.amber::before { background: var(--accent-amber); }
+  .metric-card.blue::before { background: var(--accent-blue); }
+  .metric-card.neutral::before { background: var(--border-strong); }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1;
+    font-family: var(--mono);
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .metric-sub.up { color: var(--accent-green-text); }
+  .metric-sub.warn { color: var(--accent-amber-text); }
+
+  /* ── Grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .card-title svg { width: 15px; height: 15px; color: var(--text-secondary); }
+
+  .card-action {
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-action:hover { color: var(--accent-green-text); }
+
+  /* ── Employee rows ── */
+  .emp-list { display: flex; flex-direction: column; }
+
+  .emp-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .emp-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .emp-row:first-child { padding-top: 0; }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .av-green { background: var(--accent-green-bg); color: var(--accent-green-text); }
+  .av-blue  { background: var(--accent-blue-bg);  color: var(--accent-blue-text); }
+  .av-amber { background: var(--accent-amber-bg); color: var(--accent-amber-text); }
+  .av-gray  { background: #f0efe9; color: var(--text-secondary); }
+
+  .emp-info { flex: 1; min-width: 0; }
+  .emp-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .emp-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+
+  .emp-right { text-align: right; flex-shrink: 0; }
+  .emp-amount { font-size: 13px; font-weight: 600; font-family: var(--mono); }
+  .emp-hours { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── Badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .b-green { background: var(--accent-green-bg); color: var(--accent-green-text); }
+  .b-amber { background: var(--accent-amber-bg); color: var(--accent-amber-text); }
+  .b-red   { background: var(--accent-red-bg);   color: var(--accent-red-text); }
+  .b-gray  { background: #f0efe9; color: var(--text-secondary); }
+  .b-blue  { background: var(--accent-blue-bg);  color: var(--accent-blue-text); }
+
+  /* ── Events ── */
+  .event-list { display: flex; flex-direction: column; }
+
+  .event-row {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .event-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .event-row:first-child { padding-top: 0; }
+
+  .event-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .d-green { background: var(--accent-green); }
+  .d-amber { background: var(--accent-amber); }
+  .d-red   { background: var(--accent-red); }
+
+  .event-body { flex: 1; }
+  .event-text { font-size: 12px; color: var(--text-primary); line-height: 1.4; }
+  .event-time { font-size: 11px; color: var(--text-muted); margin-top: 1px; font-family: var(--mono); }
+
+  /* ── Payroll table ── */
+  .payroll-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .payroll-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0 10px 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .payroll-table th:last-child { text-align: right; padding-right: 0; }
+
+  .payroll-table td {
+    padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  .payroll-table td:last-child { text-align: right; padding-right: 0; }
+  .payroll-table tr:last-child td { border-bottom: none; }
+
+  .payroll-table tr:hover td { background: #faf9f6; }
+
+  .bar-wrap {
+    width: 60px;
+    height: 4px;
+    background: #f0efe9;
+    border-radius: 2px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent-green);
+  }
+
+  .total-row td {
+    font-weight: 600;
+    font-size: 13px;
+    border-top: 2px solid var(--border-strong) !important;
+    padding-top: 12px !important;
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-sidebar);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    margin-bottom: 16px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+
+  .status-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    font-family: var(--mono);
+  }
+
+  .status-div {
+    width: 1px;
+    height: 24px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  /* ── Loader ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-green);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Error ── */
+  .error-banner {
+    background: var(--accent-red-bg);
+    border: 1px solid #f09595;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--accent-red-text);
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ── Config panel ── */
+  .config-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .config-label { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+
+  .config-input {
+    flex: 1;
+    min-width: 240px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 7px 11px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--text-primary);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .config-input:focus { border-color: var(--accent-green); }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    font-family: var(--font);
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: #fff;
+  }
+
+  .btn-primary:hover { background: #18845f; border-color: #18845f; }
+
+  .btn-outline {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--text-secondary);
+  }
+
+  .btn-outline:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+  /* ── Month selector ── */
+  .month-select {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .month-select:focus { border-color: var(--accent-green); }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ── Refresh btn ── */
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 5px 9px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 13px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .refresh-btn:hover { border-color: var(--accent-green); color: var(--accent-green-text); }
+
+  .spin-icon { display: inline-block; }
+  .spinning { animation: spin 0.7s linear infinite; }
+
+  /* ── Animations ── */
+  .fade-in { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⏱</div>
+    <div>
+      <div class="logo-text">TimeTracker</div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Обзор
+      <span class="nav-badge" id="online-badge">0</span>
+    </div>
+    <div class="nav-item" onclick="scrollTo('#section-employees')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Сотрудники
+    </div>
+    <div class="nav-item" onclick="scrollTo('#section-payroll')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Зарплаты
+    </div>
+    <div class="nav-section">Управление</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Экспорт
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2m0 18v-2m7.07-2.93l-1.41-1.41M4.93 19.07l1.41-1.41M20 12h2M2 12h2"/></svg>
+      Настройки
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-avatar">АД</div>
+    <div>
+      <div class="user-name">Администратор</div>
+      <div class="user-role">Руководитель</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Config bar -->
+  <div class="config-bar">
+    <span class="config-label">API endpoint:</span>
+    <input class="config-input" id="api-url" type="text" value="http://localhost:8000" placeholder="https://your-api.example.com" />
+    <button class="btn btn-primary" onclick="loadAll()">Подключить</button>
+    <button class="btn btn-outline" onclick="loadAll()">
+      <span class="spin-icon" id="refresh-icon">↻</span> Обновить
+    </button>
+    <select class="month-select" id="month-select" onchange="loadPayroll()">
+      <option value="1">Январь</option>
+      <option value="2">Февраль</option>
+      <option value="3">Март</option>
+      <option value="4">Апрель</option>
+      <option value="5">Май</option>
+      <option value="6" selected>Июнь</option>
+      <option value="7">Июль</option>
+      <option value="8">Август</option>
+      <option value="9">Сентябрь</option>
+      <option value="10">Октябрь</option>
+      <option value="11">Ноябрь</option>
+      <option value="12">Декабрь</option>
+    </select>
+  </div>
+
+  <div class="error-banner" id="error-banner"></div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="page-title">Обзор</div>
+      <div class="page-sub" id="last-updated">Загрузка данных...</div>
+    </div>
+    <div class="topbar-right">
+      <span class="pill"><span id="update-time">—</span></span>
+      <span class="pill pill-green">
+        <span class="pill-dot"></span>
+        <span id="online-count">0</span> на смене
+      </span>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-dot"></span>
+      Система работает
+    </div>
+    <div class="status-div"></div>
+    <div class="status-item">
+      Сотрудников: <span class="status-val" id="stat-total" style="margin-left:6px">—</span>
+    </div>
+    <div class="status-div"></div>
+    <div class="status-item">
+      На смене: <span class="status-val" id="stat-online" style="margin-left:6px">—</span>
+    </div>
+    <div class="status-div"></div>
+    <div class="status-item">
+      К выплате: <span class="status-val" id="stat-payout" style="margin-left:6px">—</span>
+    </div>
+    <div class="status-div"></div>
+    <div class="status-item">
+      Часов в месяце: <span class="status-val" id="stat-hours" style="margin-left:6px">—</span>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics" id="metrics">
+    <div class="metric-card green">
+      <div class="metric-label">К выплате</div>
+      <div class="metric-value" id="m-payout">—</div>
+      <div class="metric-sub" id="m-payout-sub">за текущий месяц</div>
+    </div>
+    <div class="metric-card neutral">
+      <div class="metric-label">Сотрудников</div>
+      <div class="metric-value" id="m-total">—</div>
+      <div class="metric-sub" id="m-online-sub">загрузка...</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="metric-label">Часов отработано</div>
+      <div class="metric-value" id="m-hours">—</div>
+      <div class="metric-sub">в этом месяце</div>
+    </div>
+    <div class="metric-card amber">
+      <div class="metric-label">Авансы выданы</div>
+      <div class="metric-value" id="m-advances">—</div>
+      <div class="metric-sub" id="m-advances-sub">загрузка...</div>
+    </div>
+  </div>
+
+  <!-- Employees + Events -->
+  <div class="grid-2" id="section-employees">
+    <div class="card fade-in">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Сотрудники
+        </div>
+        <span class="card-action" onclick="loadAll()">↻ обновить</span>
+      </div>
+      <div class="emp-list" id="emp-list">
+        <div class="loading"><div class="spinner"></div>Загрузка...</div>
+      </div>
+    </div>
+
+    <div class="card fade-in">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          Активность
+        </div>
+      </div>
+      <div class="event-list" id="event-list">
+        <div class="loading"><div class="spinner"></div>Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payroll table -->
+  <div class="card fade-in" id="section-payroll">
+    <div class="card-header">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Ведомость
+      </div>
+      <button class="btn btn-outline" onclick="exportCSV()" style="font-size:11px;padding:5px 12px">
+        ↓ Экспорт CSV
+      </button>
+    </div>
+    <div id="payroll-container">
+      <div class="loading"><div class="spinner"></div>Загрузка...</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const COLORS = ['av-green','av-blue','av-amber','av-gray'];
+let employeesData = [];
+let payrollData = [];
+
+function getApiUrl() {
+  return document.getElementById('api-url').value.replace(/\/$/, '');
+}
+
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+function fmtMoney(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Math.round(n).toLocaleString('ru-RU') + ' ₽';
+}
+
+function fmtHours(n) {
+  if (n == null || isNaN(n)) return '—';
+  return (Math.round(n * 10) / 10) + ' ч';
+}
+
+function colorClass(i) {
+  return COLORS[i % COLORS.length];
+}
+
+function showError(msg) {
+  const b = document.getElementById('error-banner');
+  b.textContent = '⚠ ' + msg;
+  b.style.display = 'block';
+  setTimeout(() => { b.style.display = 'none'; }, 6000);
+}
+
+async function apiFetch(path) {
+  const res = await fetch(getApiUrl() + path);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function updateTime() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('update-time').textContent = 'Обновлено в ' + t;
+  document.getElementById('last-updated').textContent =
+    now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+async function loadEmployees() {
+  try {
+    const data = await apiFetch('/employees');
+    employeesData = data.employees || [];
+
+    const onlineCount = employeesData.filter(e => e.on_shift).length;
+    document.getElementById('online-count').textContent = onlineCount;
+    document.getElementById('online-badge').textContent = onlineCount;
+    document.getElementById('m-total').textContent = employeesData.length;
+    document.getElementById('m-online-sub').textContent = onlineCount + ' сейчас на смене';
+    document.getElementById('stat-total').textContent = employeesData.length;
+    document.getElementById('stat-online').textContent = onlineCount;
+
+    const list = document.getElementById('emp-list');
+    if (!employeesData.length) {
+      list.innerHTML = '<div class="empty">Нет зарегистрированных сотрудников</div>';
+      return;
+    }
+
+    list.innerHTML = employeesData.map((emp, i) => {
+      const statusBadge = emp.on_shift
+        ? `<span class="badge b-green">● на смене</span>`
+        : `<span class="badge b-gray">○ не на смене</span>`;
+      return `
+        <div class="emp-row">
+          <div class="avatar ${colorClass(i)}">${initials(emp.name)}</div>
+          <div class="emp-info">
+            <div class="emp-name">${emp.name}</div>
+            <div class="emp-meta">${statusBadge} <span style="color:var(--text-muted);font-size:10px;margin-left:4px">${emp.hourly_rate} ₽/ч</span></div>
+          </div>
+          <div class="emp-right">
+            <div class="emp-hours">${emp.total_shifts || 0} смен · ${fmtHours(emp.total_hours)}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('emp-list').innerHTML =
+      '<div class="empty">Не удалось загрузить. Проверьте API URL.</div>';
+    showError('Ошибка загрузки сотрудников: ' + e.message);
+  }
+}
+
+async function loadPayroll() {
+  const month = document.getElementById('month-select').value;
+  const year = new Date().getFullYear();
+  const container = document.getElementById('payroll-container');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div>Загрузка...</div>';
+
+  if (!employeesData.length) {
+    container.innerHTML = '<div class="empty">Нет данных</div>';
+    return;
+  }
+
+  try {
+    payrollData = [];
+    let totalPayout = 0;
+    let totalHours = 0;
+
+    const results = await Promise.all(
+      employeesData.map(emp =>
+        apiFetch(`/employees/${emp.tg_id}/salary?month=${month}&year=${year}`)
+          .then(d => ({ ...d, name: emp.name, tg_id: emp.tg_id }))
+          .catch(() => null)
+      )
+    );
+
+    payrollData = results.filter(Boolean);
+    const maxTotal = Math.max(...payrollData.map(r => r.total || 0), 1);
+
+    payrollData.forEach(r => {
+      totalPayout += r.total || 0;
+      totalHours += r.hours || 0;
+    });
+
+    document.getElementById('m-payout').textContent = fmtMoney(totalPayout);
+    document.getElementById('stat-payout').textContent = fmtMoney(totalPayout);
+    document.getElementById('m-hours').textContent = Math.round(totalHours);
+    document.getElementById('stat-hours').textContent = Math.round(totalHours);
+
+    const advTotal = payrollData.reduce((s, r) => s + (r.advances || 0), 0);
+    const advCount = payrollData.filter(r => (r.advances || 0) > 0).length;
+    document.getElementById('m-advances').textContent = fmtMoney(advTotal);
+    document.getElementById('m-advances-sub').textContent = advCount + ' сотрудн.';
+
+    if (!payrollData.length) {
+      container.innerHTML = '<div class="empty">Нет данных за выбранный месяц</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <table class="payroll-table">
+        <thead>
+          <tr>
+            <th style="width:22%">Сотрудник</th>
+            <th>Часы</th>
+            <th>Ставка</th>
+            <th>База</th>
+            <th>Премии</th>
+            <th>Штрафы</th>
+            <th>Итого</th>
+            <th style="width:100px">Прогресс</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${payrollData.map(r => {
+            const pct = Math.round((r.total / maxTotal) * 100);
+            const bonusCell = r.bonuses > 0
+              ? `<span style="color:var(--accent-green-text);font-family:var(--mono)">+${Math.round(r.bonuses).toLocaleString('ru-RU')}</span>`
+              : `<span style="color:var(--text-muted)">—</span>`;
+            const penCell = r.penalties > 0
+              ? `<span style="color:var(--accent-red-text);font-family:var(--mono)">−${Math.round(r.penalties).toLocaleString('ru-RU')}</span>`
+              : `<span style="color:var(--text-muted)">—</span>`;
+            return `
+              <tr>
+                <td style="font-weight:500">${r.name}</td>
+                <td style="font-family:var(--mono);color:var(--text-secondary)">${r.hours != null ? (Math.round(r.hours * 10)/10) : '—'}</td>
+                <td style="color:var(--text-secondary)">${r.hourly_rate != null ? r.hourly_rate + ' ₽/ч' : '—'}</td>
+                <td style="font-family:var(--mono)">${fmtMoney(r.base_salary)}</td>
+                <td>${bonusCell}</td>
+                <td>${penCell}</td>
+                <td style="font-weight:600;font-family:var(--mono)">${fmtMoney(r.total)}</td>
+                <td>
+                  <div class="bar-wrap" style="width:80px">
+                    <div class="bar-fill" style="width:${pct}%"></div>
+                  </div>
+                  <span style="font-size:10px;color:var(--text-muted);margin-left:6px;font-family:var(--mono)">${pct}%</span>
+                </td>
+              </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td colspan="3" style="color:var(--text-secondary)">Итого</td>
+            <td style="font-family:var(--mono)">${fmtMoney(payrollData.reduce((s,r) => s+(r.base_salary||0),0))}</td>
+            <td style="color:var(--accent-green-text);font-family:var(--mono)">+${fmtMoney(payrollData.reduce((s,r) => s+(r.bonuses||0),0))}</td>
+            <td style="color:var(--accent-red-text);font-family:var(--mono)">−${fmtMoney(payrollData.reduce((s,r) => s+(r.penalties||0),0))}</td>
+            <td style="font-family:var(--mono);font-size:14px">${fmtMoney(totalPayout)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>`;
+
+  } catch(e) {
+    container.innerHTML = '<div class="empty">Ошибка загрузки данных</div>';
+    showError('Ошибка ведомости: ' + e.message);
+  }
+}
+
+function renderActivity() {
+  const list = document.getElementById('event-list');
+  if (!employeesData.length) {
+    list.innerHTML = '<div class="empty">Нет данных</div>';
+    return;
+  }
+  const online = employeesData.filter(e => e.on_shift);
+  const offline = employeesData.filter(e => !e.on_shift);
+  const events = [
+    ...online.map(e => ({ dot: 'd-green', text: `${e.name} — на смене`, time: 'сейчас' })),
+    ...offline.map(e => ({ dot: 'd-green', text: `${e.name} — ${e.total_shifts || 0} смен в этом месяце`, time: `${fmtHours(e.total_hours)} всего` })),
+  ].slice(0, 8);
+
+  if (!events.length) {
+    list.innerHTML = '<div class="empty">Нет активности</div>';
+    return;
+  }
+
+  list.innerHTML = events.map(ev => `
+    <div class="event-row">
+      <div class="event-dot ${ev.dot}"></div>
+      <div class="event-body">
+        <div class="event-text">${ev.text}</div>
+        <div class="event-time">${ev.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function exportCSV() {
+  if (!payrollData.length) { showError('Нет данных для экспорта'); return; }
+  const month = document.getElementById('month-select').options[document.getElementById('month-select').selectedIndex].text;
+  const rows = [['Сотрудник','Часы','База (руб)','Премии (руб)','Штрафы (руб)','Итого (руб)']];
+  payrollData.forEach(r => {
+    rows.push([r.name, r.hours || 0, Math.round(r.base_salary || 0), Math.round(r.bonuses || 0), Math.round(r.penalties || 0), Math.round(r.total || 0)]);
+  });
+  const total = payrollData.reduce((s,r) => s+(r.total||0), 0);
+  rows.push(['ИТОГО','','','','',Math.round(total)]);
+  const csv = rows.map(r => r.join(';')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ведомость_${month}_${new Date().getFullYear()}.csv`;
+  a.click();
+}
+
+async function loadAll() {
+  const icon = document.getElementById('refresh-icon');
+  icon.classList.add('spinning');
+  updateTime();
+  await loadEmployees();
+  renderActivity();
+  await loadPayroll();
+  icon.classList.remove('spinning');
+}
+
+document.getElementById('month-select').value = String(new Date().getMonth() + 1);
+loadAll();
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>
